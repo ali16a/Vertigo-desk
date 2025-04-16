@@ -1,272 +1,336 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Vertigo - مدیریت میزهای بازی</title>
   <style>
-    :root {
-      --bg: #f0f0f0;
-      --text: #222;
-      --card: #fff;
-      --accent: #007bff;
-    }
-    body.dark {
-      --bg: #1a1a1a;
-      --text: #f5f5f5;
-      --card: #2a2a2a;
-      --accent: #66b2ff;
-    }
     body {
       font-family: sans-serif;
       background-color: var(--bg);
       color: var(--text);
       margin: 0;
       padding: 0;
-      background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 20px),
-                        url('data:image/svg+xml;utf8,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><text x="0" y="100" fill="rgba(0,0,0,0.05)" font-size="40" font-family="Arial" transform="rotate(-45)">Vertigo</text></svg>');
+      transition: background-color 0.3s, color 0.3s;
     }
-    header {
+    :root {
+      --bg: #ffffff;
+      --text: #000000;
+      --card: #f0f0f0;
+      --accent: #007bff;
+    }
+    .dark {
+      --bg: #121212;
+      --text: #ffffff;
+      --card: #1e1e1e;
+      --accent: #0d6efd;
+    }
+
+    #tables {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: flex-start;
+      padding: 1rem;
+      gap: 1rem;
+    }
+
+    .table {
+      background: var(--card);
+      border-radius: 10px;
+      padding: 1rem;
+      box-shadow: 0 0 10px #00000020;
+      flex: 0 0 calc(33.33% - 2rem);
+      position: relative;
+      transition: transform 0.3s;
+    }
+
+    .table:hover {
+      transform: scale(1.02);
+    }
+
+    h2 {
+      margin-top: 0;
+      font-size: 1.2rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 5px;
+      margin: 0.3rem 0;
+      border-radius: 5px;
+      border: 1px solid #ccc;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.2rem;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--accent);
+      color: #fff;
+      cursor: pointer;
+      transition: background-color 0.2s;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .settled {
+      background-color: gray !important;
+    }
+
+    #total {
+      text-align: center;
+      padding: 1rem;
+      font-size: 1.2rem;
+      background: var(--card);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    #controls {
       display: flex;
       justify-content: space-between;
       align-items: center;
-      padding: 10px 20px;
-      background: var(--card);
-      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      padding: 0.5rem 1rem;
+      background-color: var(--card);
     }
-    header button, header .icon {
+
+    .icon-btn {
       background: none;
       border: none;
+      font-size: 1.5rem;
       cursor: pointer;
-      font-size: 24px;
-      color: var(--text);
       transition: transform 0.3s;
     }
-    header button:hover, .icon:hover {
-      transform: scale(1.1);
+
+    .icon-btn:hover {
+      transform: scale(1.2);
     }
-    #tables {
-      padding: 20px;
-      display: flex;
-      flex-wrap: wrap;
-      gap: 20px;
-      justify-content: flex-start;
-    }
-    .table {
-      background: var(--card);
-      padding: 15px;
-      border-radius: 10px;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-      min-width: 250px;
-      flex: 0 1 calc(33.333% - 40px);
-      position: relative;
-    }
-    .settled {
-      background-color: #ccc !important;
-    }
-    #total {
-      padding: 20px;
-      font-size: 20px;
-      text-align: center;
-    }
-    .popup {
+
+    .watermark {
       position: fixed;
-      top: 0; left: 0;
-      width: 100%; height: 100%;
-      background: rgba(0,0,0,0.6);
+      bottom: 30%;
+      left: 50%;
+      transform: translateX(-50%);
+      font-size: 4rem;
+      color: rgba(200, 200, 200, 0.1);
+      z-index: 0;
+      pointer-events: none;
+      user-select: none;
+    }
+
+    #overlay {
+      position: fixed;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background-color: rgba(0,0,0,0.5);
       display: none;
-      justify-content: center;
       align-items: center;
+      justify-content: center;
       z-index: 1000;
     }
-    .popup-content {
+
+    #popup {
       background: var(--card);
-      padding: 30px;
+      padding: 2rem;
       border-radius: 10px;
       text-align: center;
-      max-width: 300px;
     }
-    .popup-content button {
-      margin: 10px;
-    }
-    .delete-btn {
-      position: absolute;
-      top: 5px;
-      left: 5px;
-      background: red;
-      color: white;
-      border: none;
-      border-radius: 50%;
-      width: 25px;
-      height: 25px;
-      cursor: pointer;
+
+    @media (max-width: 768px) {
+      .table {
+        flex: 0 0 100%;
+      }
     }
   </style>
 </head>
 <body>
-  <header>
+  <div class="watermark">VERTIGO</div>
+
+  <div id="controls">
     <div>
-      <button class="icon" onclick="addTable()">➕</button>
+      <button class="icon-btn" onclick="addTable()">➕</button>
     </div>
     <div>
-      <button class="icon" onclick="toggleDarkMode()">🌓</button>
+      <button class="icon-btn" onclick="toggleDarkMode()">🌓</button>
+      <button class="icon-btn" onclick="endDay()">🔚</button>
     </div>
-  </header>
-
-  <div id="tables"></div>
-
-  <div id="total">جمع درآمد امروز: <span id="total-income">0</span> تومان</div>
-
-  <div style="text-align: center; margin-bottom: 20px;">
-    <button onclick="showEndDayPopup()">پایان روز کاری</button>
   </div>
 
-  <div class="popup" id="popup">
-    <div class="popup-content">
-      <p id="popup-msg">درآمد امروز گیم‌نت ورتیگو: <span id="popup-income"></span> تومان</p>
+  <div id="total">جمع درآمد امروز: <span id="total-income">0</span> تومان</div>
+  <div id="tables"></div>
+
+  <div id="overlay">
+    <div id="popup">
+      <p id="popup-message"></p>
       <button onclick="confirmEndDay()">تایید</button>
-      <button onclick="closePopup()">انصراف</button>
+      <button onclick="cancelEndDay()">لغو</button>
     </div>
   </div>
 
   <script>
-    let tables = JSON.parse(localStorage.getItem('tables')) || [
-      { id: 1, type: 'PS5', rate: 45000 },
-      { id: 2, type: 'PS5', rate: 45000 },
-      { id: 3, type: 'PS5', rate: 45000 },
-      { id: 4, type: 'PS5', rate: 45000 },
-      { id: 5, type: 'PS5', rate: 45000 },
-      { id: 6, type: 'بیلیارد', rate: 100000 }
+    const tableContainer = document.getElementById("tables");
+    const incomeDisplay = document.getElementById("total-income");
+    let tables = JSON.parse(localStorage.getItem("tables")) || [
+      { id: 1, type: "PS5", rate: 45000 },
+      { id: 2, type: "PS5", rate: 45000 },
+      { id: 3, type: "PS5", rate: 45000 },
+      { id: 4, type: "PS5", rate: 45000 },
+      { id: 5, type: "PS5", rate: 45000 },
+      { id: 6, type: "بیلیارد", rate: 100000 }
     ];
+    let startTimes = JSON.parse(localStorage.getItem("startTimes")) || {};
+    let endTimes = JSON.parse(localStorage.getItem("endTimes")) || {};
+    let costs = JSON.parse(localStorage.getItem("costs")) || {};
+    let totalIncome = parseInt(localStorage.getItem("totalIncome")) || 0;
+    let timers = {};
 
-    let sessions = JSON.parse(localStorage.getItem('sessions')) || {};
-    let totalIncome = parseInt(localStorage.getItem('totalIncome')) || 0;
-    document.getElementById("total-income").textContent = totalIncome.toLocaleString();
-
-    tables.forEach(renderTable);
-    setInterval(updateTimers, 1000);
+    function saveState() {
+      localStorage.setItem("tables", JSON.stringify(tables));
+      localStorage.setItem("startTimes", JSON.stringify(startTimes));
+      localStorage.setItem("endTimes", JSON.stringify(endTimes));
+      localStorage.setItem("costs", JSON.stringify(costs));
+      localStorage.setItem("totalIncome", totalIncome);
+    }
 
     function renderTable(table) {
-      const div = document.createElement('div');
-      div.className = 'table';
+      const div = document.createElement("div");
+      div.className = "table";
       div.id = `table-${table.id}`;
       div.innerHTML = `
-        <button class="delete-btn" onclick="removeTable(${table.id})">×</button>
-        <h3>میز ${table.id} (${table.type})</h3>
-        <label>هزینه هر ساعت: <input type="number" id="rate-${table.id}" value="${table.rate}"></label><br>
+        <h2>میز ${table.id} (${table.type})</h2>
+        <label>هزینه هر ساعت:
+          <input type="number" id="rate-${table.id}" value="${table.rate}" />
+        </label>
         <p>زمان شروع: <span id="start-${table.id}">--:--:--</span></p>
         <p>زمان پایان: <span id="end-${table.id}">--:--:--</span></p>
-        <p>مدت: <span id="duration-${table.id}">--:--:--</span></p>
+        <p>مدت: <span id="duration-${table.id}">00:00:00</span></p>
         <p>هزینه: <span id="cost-${table.id}">0</span> تومان</p>
         <button onclick="startGame(${table.id})">شروع</button>
         <button onclick="endGame(${table.id})">پایان</button>
-        <button onclick="settle(${table.id})">تسویه</button>
+        <button onclick="settle(${table.id})" id="settle-${table.id}">تسویه</button>
+        ${table.manual ? `<button onclick="removeTable(${table.id})">❌ حذف</button>` : ''}
       `;
-      document.getElementById("tables").appendChild(div);
-      if (sessions[table.id]) {
-        document.getElementById(`start-${table.id}`).textContent = new Date(sessions[table.id].start).toLocaleTimeString('fa-IR');
-        if (sessions[table.id].end) {
-          document.getElementById(`end-${table.id}`).textContent = new Date(sessions[table.id].end).toLocaleTimeString('fa-IR');
-          document.getElementById(`cost-${table.id}`).textContent = sessions[table.id].cost.toLocaleString();
-        }
+      tableContainer.appendChild(div);
+
+      if (startTimes[table.id]) {
+        document.getElementById(`start-${table.id}`).textContent = new Date(startTimes[table.id]).toLocaleTimeString('fa-IR');
+        startTimer(table.id);
+      }
+      if (endTimes[table.id]) {
+        document.getElementById(`end-${table.id}`).textContent = new Date(endTimes[table.id]).toLocaleTimeString('fa-IR');
+      }
+      if (costs[table.id]) {
+        document.getElementById(`cost-${table.id}`).textContent = costs[table.id].toLocaleString();
       }
     }
 
     function startGame(id) {
-      sessions[id] = { start: new Date().toISOString() };
-      localStorage.setItem("sessions", JSON.stringify(sessions));
-      document.getElementById(`start-${id}`).textContent = new Date().toLocaleTimeString('fa-IR');
+      const now = new Date();
+      startTimes[id] = now;
+      endTimes[id] = null;
+      document.getElementById(`start-${id}`).textContent = now.toLocaleTimeString('fa-IR');
+      startTimer(id);
+      saveState();
+    }
+
+    function startTimer(id) {
+      clearInterval(timers[id]);
+      timers[id] = setInterval(() => {
+        const now = new Date();
+        const start = new Date(startTimes[id]);
+        const diff = now - start;
+        const hrs = Math.floor(diff / (1000 * 60 * 60));
+        const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secs = Math.floor((diff % (1000 * 60)) / 1000);
+        document.getElementById(`duration-${id}`).textContent =
+          `${hrs.toString().padStart(2, "0")}:${mins.toString().padStart(2, "0")}:${secs.toString().padStart(2, "0")}`;
+      }, 1000);
     }
 
     function endGame(id) {
-      if (!sessions[id]?.start) return alert("ابتدا شروع را بزنید.");
-      const end = new Date();
-      const start = new Date(sessions[id].start);
+      const now = new Date();
+      endTimes[id] = now;
+      document.getElementById(`end-${id}`).textContent = now.toLocaleTimeString('fa-IR');
+      const start = new Date(startTimes[id]);
       const rate = parseInt(document.getElementById(`rate-${id}`).value);
-      const hours = (end - start) / (1000 * 60 * 60);
-      const cost = Math.ceil(hours * rate);
-      sessions[id].end = end.toISOString();
-      sessions[id].cost = cost;
-      localStorage.setItem("sessions", JSON.stringify(sessions));
-      totalIncome += cost;
-      localStorage.setItem("totalIncome", totalIncome);
-      document.getElementById("total-income").textContent = totalIncome.toLocaleString();
-      document.getElementById(`end-${id}`).textContent = end.toLocaleTimeString('fa-IR');
+      const diffHours = (now - start) / (1000 * 60 * 60);
+      const cost = Math.ceil(diffHours * rate);
       document.getElementById(`cost-${id}`).textContent = cost.toLocaleString();
-    }
-
-    function updateTimers() {
-      for (let id in sessions) {
-        if (sessions[id]?.start && !sessions[id].end) {
-          const now = new Date();
-          const start = new Date(sessions[id].start);
-          const diff = new Date(now - start);
-          const h = String(diff.getUTCHours()).padStart(2, '0');
-          const m = String(diff.getUTCMinutes()).padStart(2, '0');
-          const s = String(diff.getUTCSeconds()).padStart(2, '0');
-          document.getElementById(`duration-${id}`).textContent = `${h}:${m}:${s}`;
-        }
-      }
+      costs[id] = cost;
+      totalIncome += cost;
+      incomeDisplay.textContent = totalIncome.toLocaleString();
+      saveState();
     }
 
     function settle(id) {
-      delete sessions[id];
-      localStorage.setItem("sessions", JSON.stringify(sessions));
+      clearInterval(timers[id]);
+      delete startTimes[id];
+      delete endTimes[id];
+      delete costs[id];
       document.getElementById(`start-${id}`).textContent = "--:--:--";
-      document.getElementById(`duration-${id}`).textContent = "--:--:--";
+      document.getElementById(`end-${id}`).textContent = "--:--:--";
+      document.getElementById(`duration-${id}`).textContent = "00:00:00";
+      document.getElementById(`cost-${id}`).textContent = "0";
+      document.getElementById(`settle-${id}`).textContent = "تسویه شد";
+      document.getElementById(`settle-${id}`).classList.add("settled");
+      saveState();
     }
 
     function addTable() {
-      const type = prompt("نوع میز را وارد کنید:", "PS5");
-      if (!type) return;
-      const rate = type === 'بیلیارد' ? 100000 : 45000;
-      const id = tables.length ? tables[tables.length - 1].id + 1 : 1;
-      const table = { id, type, rate };
-      tables.push(table);
-      localStorage.setItem("tables", JSON.stringify(tables));
-      renderTable(table);
+      const type = prompt("نوع میز را وارد کنید (مثلاً PS5 یا بیلیارد):", "PS5");
+      const rate = type === "بیلیارد" ? 100000 : 45000;
+      const newId = Date.now();
+      const newTable = { id: newId, type, rate, manual: true };
+      tables.push(newTable);
+      renderTable(newTable);
+      saveState();
     }
 
     function removeTable(id) {
       tables = tables.filter(t => t.id !== id);
-      delete sessions[id];
-      localStorage.setItem("tables", JSON.stringify(tables));
-      localStorage.setItem("sessions", JSON.stringify(sessions));
       document.getElementById(`table-${id}`).remove();
+      delete startTimes[id];
+      delete endTimes[id];
+      delete costs[id];
+      saveState();
     }
 
     function toggleDarkMode() {
-      document.body.classList.toggle('dark');
-      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
+      document.body.classList.toggle("dark");
+      localStorage.setItem("darkMode", document.body.classList.contains("dark"));
     }
 
-    if (localStorage.getItem('darkMode') === 'true') {
-      document.body.classList.add('dark');
+    if (localStorage.getItem("darkMode") === "true") {
+      document.body.classList.add("dark");
     }
 
-    function showEndDayPopup() {
-      document.getElementById("popup-income").textContent = totalIncome.toLocaleString();
-      document.getElementById("popup").style.display = "flex";
-    }
-
-    function closePopup() {
-      document.getElementById("popup").style.display = "none";
+    function endDay() {
+      document.getElementById("popup-message").textContent =
+        `درآمد امروز گیم‌نت ورتیگو ${totalIncome.toLocaleString()} تومان بود. آیا می‌خواهید روز کاری را پایان دهید؟`;
+      document.getElementById("overlay").style.display = "flex";
     }
 
     function confirmEndDay() {
       totalIncome = 0;
-      sessions = {};
-      localStorage.removeItem("sessions");
+      startTimes = {};
+      endTimes = {};
+      costs = {};
+      localStorage.removeItem("startTimes");
+      localStorage.removeItem("endTimes");
+      localStorage.removeItem("costs");
       localStorage.setItem("totalIncome", "0");
-      document.getElementById("total-income").textContent = "0";
-      document.querySelectorAll(".table").forEach(div => {
-        div.querySelector(`#start-${div.id.split('-')[1]}`).textContent = "--:--:--";
-        div.querySelector(`#duration-${div.id.split('-')[1]}`).textContent = "--:--:--";
-        div.querySelector(`#end-${div.id.split('-')[1]}`).textContent = "--:--:--";
-        div.querySelector(`#cost-${div.id.split('-')[1]}`).textContent = "0";
-      });
-      closePopup();
+      location.reload();
     }
+
+    function cancelEndDay() {
+      document.getElementById("overlay").style.display = "none";
+    }
+
+    tables.forEach(renderTable);
+    incomeDisplay.textContent = totalIncome.toLocaleString();
   </script>
 </body>
-</html>
+</html
