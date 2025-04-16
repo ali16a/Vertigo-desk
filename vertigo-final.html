@@ -1,319 +1,272 @@
 <!DOCTYPE html>
 <html lang="fa" dir="rtl">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>Vertigo - مدیریت میزهای بازی</title>
   <style>
+    :root {
+      --bg: #f0f0f0;
+      --text: #222;
+      --card: #fff;
+      --accent: #007bff;
+    }
+    body.dark {
+      --bg: #1a1a1a;
+      --text: #f5f5f5;
+      --card: #2a2a2a;
+      --accent: #66b2ff;
+    }
     body {
-      font-family: Tahoma, sans-serif;
-      background: var(--bg);
+      font-family: sans-serif;
+      background-color: var(--bg);
       color: var(--text);
       margin: 0;
       padding: 0;
+      background-image: repeating-linear-gradient(45deg, rgba(0,0,0,0.01) 0, rgba(0,0,0,0.01) 1px, transparent 1px, transparent 20px),
+                        url('data:image/svg+xml;utf8,<svg width="200" height="200" xmlns="http://www.w3.org/2000/svg"><text x="0" y="100" fill="rgba(0,0,0,0.05)" font-size="40" font-family="Arial" transform="rotate(-45)">Vertigo</text></svg>');
     }
-
-    :root {
-      --bg: #f0f0f0;
-      --text: #000;
-      --card: #fff;
-    }
-
-    .dark {
-      --bg: #121212;
-      --text: #fff;
-      --card: #1e1e1e;
-    }
-
-    #watermark {
-      position: fixed;
-      top: 50%;
-      left: 50%;
-      font-size: 80px;
-      opacity: 0.05;
-      transform: translate(-50%, -50%) rotate(-30deg);
-      pointer-events: none;
-      z-index: 0;
-    }
-
     header {
-      padding: 10px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
+      padding: 10px 20px;
       background: var(--card);
-      position: sticky;
-      top: 0;
-      z-index: 2;
-      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
     }
-
-    header button {
+    header button, header .icon {
       background: none;
       border: none;
-      font-size: 20px;
       cursor: pointer;
+      font-size: 24px;
+      color: var(--text);
+      transition: transform 0.3s;
     }
-
+    header button:hover, .icon:hover {
+      transform: scale(1.1);
+    }
     #tables {
-      padding: 20px 30px;
+      padding: 20px;
       display: flex;
-      flex-direction: column;
+      flex-wrap: wrap;
       gap: 20px;
+      justify-content: flex-start;
     }
-
     .table {
       background: var(--card);
       padding: 15px;
       border-radius: 10px;
       box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+      min-width: 250px;
+      flex: 0 1 calc(33.333% - 40px);
       position: relative;
     }
-
-    .table h2 {
-      margin: 0 0 10px 0;
-    }
-
-    .table input {
-      width: 80px;
-    }
-
     .settled {
-      color: green;
+      background-color: #ccc !important;
     }
-
-    .delete-btn {
-      position: absolute;
-      top: 10px;
-      left: 10px;
-      background: crimson;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      padding: 5px;
-      cursor: pointer;
-    }
-
     #total {
-      padding: 20px 30px;
-      font-weight: bold;
-      font-size: 18px;
+      padding: 20px;
+      font-size: 20px;
+      text-align: center;
     }
-
-    #end-day {
-      display: block;
-      margin: 30px auto;
-      padding: 12px 20px;
-      font-size: 16px;
-      background: darkred;
-      color: #fff;
-      border: none;
-      border-radius: 8px;
-      cursor: pointer;
-    }
-
-    #popup {
+    .popup {
       position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
       background: rgba(0,0,0,0.6);
       display: none;
-      align-items: center;
       justify-content: center;
-      z-index: 10;
+      align-items: center;
+      z-index: 1000;
     }
-
-    #popup .content {
+    .popup-content {
       background: var(--card);
-      color: var(--text);
-      padding: 20px;
+      padding: 30px;
       border-radius: 10px;
       text-align: center;
-      max-width: 400px;
-      width: 80%;
+      max-width: 300px;
     }
-
-    #popup button {
-      margin-top: 15px;
-      padding: 10px 20px;
-      font-size: 16px;
+    .popup-content button {
+      margin: 10px;
+    }
+    .delete-btn {
+      position: absolute;
+      top: 5px;
+      left: 5px;
+      background: red;
+      color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 50%;
+      width: 25px;
+      height: 25px;
       cursor: pointer;
-    }
-
-    .icon-btn {
-      font-size: 24px;
-      cursor: pointer;
-      background: none;
-      border: none;
-    }
-
-    .timer {
-      font-family: monospace;
-      font-size: 16px;
     }
   </style>
 </head>
 <body>
-  <div id="watermark">Vertigo</div>
   <header>
-    <button onclick="addTable()" title="افزودن میز"><span class="icon-btn">➕</span></button>
-    <button onclick="toggleDarkMode()" title="تغییر حالت"><span id="theme-icon" class="icon-btn">🌙</span></button>
+    <div>
+      <button class="icon" onclick="addTable()">➕</button>
+    </div>
+    <div>
+      <button class="icon" onclick="toggleDarkMode()">🌓</button>
+    </div>
   </header>
 
   <div id="tables"></div>
 
   <div id="total">جمع درآمد امروز: <span id="total-income">0</span> تومان</div>
 
-  <button id="end-day" onclick="confirmEndDay()">پایان روز کاری</button>
+  <div style="text-align: center; margin-bottom: 20px;">
+    <button onclick="showEndDayPopup()">پایان روز کاری</button>
+  </div>
 
-  <div id="popup">
-    <div class="content">
-      <p id="popup-message"></p>
-      <button onclick="endDay()">تأیید</button>
+  <div class="popup" id="popup">
+    <div class="popup-content">
+      <p id="popup-msg">درآمد امروز گیم‌نت ورتیگو: <span id="popup-income"></span> تومان</p>
+      <button onclick="confirmEndDay()">تایید</button>
+      <button onclick="closePopup()">انصراف</button>
     </div>
   </div>
 
   <script>
-    let tables = JSON.parse(localStorage.getItem("tables")) || [
+    let tables = JSON.parse(localStorage.getItem('tables')) || [
       { id: 1, type: 'PS5', rate: 45000 },
-      { id: 2, type: 'بیلیارد', rate: 100000 }
+      { id: 2, type: 'PS5', rate: 45000 },
+      { id: 3, type: 'PS5', rate: 45000 },
+      { id: 4, type: 'PS5', rate: 45000 },
+      { id: 5, type: 'PS5', rate: 45000 },
+      { id: 6, type: 'بیلیارد', rate: 100000 }
     ];
 
-    let activeGames = JSON.parse(localStorage.getItem("activeGames")) || {};
-    let totalIncome = parseInt(localStorage.getItem("totalIncome")) || 0;
-
+    let sessions = JSON.parse(localStorage.getItem('sessions')) || {};
+    let totalIncome = parseInt(localStorage.getItem('totalIncome')) || 0;
     document.getElementById("total-income").textContent = totalIncome.toLocaleString();
 
-    function saveState() {
-      localStorage.setItem("tables", JSON.stringify(tables));
-      localStorage.setItem("activeGames", JSON.stringify(activeGames));
-      localStorage.setItem("totalIncome", totalIncome);
-    }
+    tables.forEach(renderTable);
+    setInterval(updateTimers, 1000);
 
     function renderTable(table) {
-      const div = document.createElement("div");
-      div.className = "table";
+      const div = document.createElement('div');
+      div.className = 'table';
       div.id = `table-${table.id}`;
       div.innerHTML = `
-        <h2>میز ${table.id} (${table.type})</h2>
+        <button class="delete-btn" onclick="removeTable(${table.id})">×</button>
+        <h3>میز ${table.id} (${table.type})</h3>
         <label>هزینه هر ساعت: <input type="number" id="rate-${table.id}" value="${table.rate}"></label><br>
         <p>زمان شروع: <span id="start-${table.id}">--:--:--</span></p>
         <p>زمان پایان: <span id="end-${table.id}">--:--:--</span></p>
-        <p>مدت: <span class="timer" id="duration-${table.id}">00:00:00</span></p>
+        <p>مدت: <span id="duration-${table.id}">--:--:--</span></p>
         <p>هزینه: <span id="cost-${table.id}">0</span> تومان</p>
         <button onclick="startGame(${table.id})">شروع</button>
         <button onclick="endGame(${table.id})">پایان</button>
-        <button onclick="settle(${table.id})" id="settle-${table.id}">تسویه</button>
-        ${table.custom ? `<button class="delete-btn" onclick="deleteTable(${table.id})">حذف</button>` : ""}
+        <button onclick="settle(${table.id})">تسویه</button>
       `;
       document.getElementById("tables").appendChild(div);
-
-      if (activeGames[table.id]) {
-        document.getElementById(`start-${table.id}`).textContent = new Date(activeGames[table.id].start).toLocaleTimeString('fa-IR');
-        updateTimer(table.id);
+      if (sessions[table.id]) {
+        document.getElementById(`start-${table.id}`).textContent = new Date(sessions[table.id].start).toLocaleTimeString('fa-IR');
+        if (sessions[table.id].end) {
+          document.getElementById(`end-${table.id}`).textContent = new Date(sessions[table.id].end).toLocaleTimeString('fa-IR');
+          document.getElementById(`cost-${table.id}`).textContent = sessions[table.id].cost.toLocaleString();
+        }
       }
     }
 
-    function addTable() {
-      const type = prompt("نوع میز:", "PS5") || "PS5";
-      const newId = tables.length ? Math.max(...tables.map(t => t.id)) + 1 : 1;
-      const rate = type === 'بیلیارد' ? 100000 : 45000;
-      const table = { id: newId, type, rate, custom: true };
-      tables.push(table);
-      renderTable(table);
-      saveState();
-    }
-
-    function deleteTable(id) {
-      tables = tables.filter(t => t.id !== id);
-      delete activeGames[id];
-      document.getElementById(`table-${id}`).remove();
-      saveState();
-    }
-
     function startGame(id) {
-      const now = new Date();
-      activeGames[id] = { start: now.toISOString(), end: null };
-      document.getElementById(`start-${id}`).textContent = now.toLocaleTimeString('fa-IR');
-      updateTimer(id);
-      saveState();
-    }
-
-    function updateTimer(id) {
-      const intervalId = setInterval(() => {
-        if (!activeGames[id] || activeGames[id].end) return clearInterval(intervalId);
-        const start = new Date(activeGames[id].start);
-        const now = new Date();
-        const diff = new Date(now - start);
-        const h = String(diff.getUTCHours()).padStart(2, "0");
-        const m = String(diff.getUTCMinutes()).padStart(2, "0");
-        const s = String(diff.getUTCSeconds()).padStart(2, "0");
-        const duration = `${h}:${m}:${s}`;
-        const rate = parseInt(document.getElementById(`rate-${id}`).value);
-        const cost = Math.ceil(((now - start) / (1000 * 60 * 60)) * rate);
-        document.getElementById(`duration-${id}`).textContent = duration;
-        document.getElementById(`cost-${id}`).textContent = cost.toLocaleString();
-      }, 1000);
+      sessions[id] = { start: new Date().toISOString() };
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+      document.getElementById(`start-${id}`).textContent = new Date().toLocaleTimeString('fa-IR');
     }
 
     function endGame(id) {
-      const now = new Date();
-      if (!activeGames[id]) return alert("بازی شروع نشده است.");
-      activeGames[id].end = now.toISOString();
-      document.getElementById(`end-${id}`).textContent = now.toLocaleTimeString('fa-IR');
-      const start = new Date(activeGames[id].start);
+      if (!sessions[id]?.start) return alert("ابتدا شروع را بزنید.");
+      const end = new Date();
+      const start = new Date(sessions[id].start);
       const rate = parseInt(document.getElementById(`rate-${id}`).value);
-      const diffHours = (now - start) / (1000 * 60 * 60);
-      const cost = Math.ceil(diffHours * rate);
+      const hours = (end - start) / (1000 * 60 * 60);
+      const cost = Math.ceil(hours * rate);
+      sessions[id].end = end.toISOString();
+      sessions[id].cost = cost;
+      localStorage.setItem("sessions", JSON.stringify(sessions));
       totalIncome += cost;
+      localStorage.setItem("totalIncome", totalIncome);
       document.getElementById("total-income").textContent = totalIncome.toLocaleString();
-      saveState();
+      document.getElementById(`end-${id}`).textContent = end.toLocaleTimeString('fa-IR');
+      document.getElementById(`cost-${id}`).textContent = cost.toLocaleString();
+    }
+
+    function updateTimers() {
+      for (let id in sessions) {
+        if (sessions[id]?.start && !sessions[id].end) {
+          const now = new Date();
+          const start = new Date(sessions[id].start);
+          const diff = new Date(now - start);
+          const h = String(diff.getUTCHours()).padStart(2, '0');
+          const m = String(diff.getUTCMinutes()).padStart(2, '0');
+          const s = String(diff.getUTCSeconds()).padStart(2, '0');
+          document.getElementById(`duration-${id}`).textContent = `${h}:${m}:${s}`;
+        }
+      }
     }
 
     function settle(id) {
+      delete sessions[id];
+      localStorage.setItem("sessions", JSON.stringify(sessions));
       document.getElementById(`start-${id}`).textContent = "--:--:--";
-      document.getElementById(`end-${id}`).textContent = "--:--:--";
-      document.getElementById(`duration-${id}`).textContent = "00:00:00";
-      document.getElementById(`cost-${id}`).textContent = "0";
-      document.getElementById(`settle-${id}`).textContent = "تسویه شد";
-      document.getElementById(`settle-${id}`).classList.add("settled");
-      delete activeGames[id];
-      saveState();
+      document.getElementById(`duration-${id}`).textContent = "--:--:--";
     }
 
-    function confirmEndDay() {
-      document.getElementById("popup-message").textContent =
-        `درآمد امروز گیم‌نت Vertigo ${totalIncome.toLocaleString()} تومان بوده است. آیا مایل به پایان روز کاری هستید؟`;
-      document.getElementById("popup").style.display = "flex";
+    function addTable() {
+      const type = prompt("نوع میز را وارد کنید:", "PS5");
+      if (!type) return;
+      const rate = type === 'بیلیارد' ? 100000 : 45000;
+      const id = tables.length ? tables[tables.length - 1].id + 1 : 1;
+      const table = { id, type, rate };
+      tables.push(table);
+      localStorage.setItem("tables", JSON.stringify(tables));
+      renderTable(table);
     }
 
-    function endDay() {
-      totalIncome = 0;
-      activeGames = {};
-      document.getElementById("popup").style.display = "none";
-      localStorage.removeItem("activeGames");
-      localStorage.setItem("totalIncome", "0");
-      document.getElementById("total-income").textContent = "0";
-      location.reload();
+    function removeTable(id) {
+      tables = tables.filter(t => t.id !== id);
+      delete sessions[id];
+      localStorage.setItem("tables", JSON.stringify(tables));
+      localStorage.setItem("sessions", JSON.stringify(sessions));
+      document.getElementById(`table-${id}`).remove();
     }
 
     function toggleDarkMode() {
-      document.body.classList.toggle("dark");
-      const isDark = document.body.classList.contains("dark");
-      localStorage.setItem("darkMode", isDark);
-      document.getElementById("theme-icon").textContent = isDark ? "☀️" : "🌙";
+      document.body.classList.toggle('dark');
+      localStorage.setItem('darkMode', document.body.classList.contains('dark'));
     }
 
-    if (localStorage.getItem("darkMode") === "true") {
-      document.body.classList.add("dark");
-      document.getElementById("theme-icon").textContent = "☀️";
+    if (localStorage.getItem('darkMode') === 'true') {
+      document.body.classList.add('dark');
     }
 
-    tables.forEach(renderTable);
+    function showEndDayPopup() {
+      document.getElementById("popup-income").textContent = totalIncome.toLocaleString();
+      document.getElementById("popup").style.display = "flex";
+    }
+
+    function closePopup() {
+      document.getElementById("popup").style.display = "none";
+    }
+
+    function confirmEndDay() {
+      totalIncome = 0;
+      sessions = {};
+      localStorage.removeItem("sessions");
+      localStorage.setItem("totalIncome", "0");
+      document.getElementById("total-income").textContent = "0";
+      document.querySelectorAll(".table").forEach(div => {
+        div.querySelector(`#start-${div.id.split('-')[1]}`).textContent = "--:--:--";
+        div.querySelector(`#duration-${div.id.split('-')[1]}`).textContent = "--:--:--";
+        div.querySelector(`#end-${div.id.split('-')[1]}`).textContent = "--:--:--";
+        div.querySelector(`#cost-${div.id.split('-')[1]}`).textContent = "0";
+      });
+      closePopup();
+    }
   </script>
 </body>
 </html>
