@@ -1,0 +1,136 @@
+
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Vertigo - مدیریت میزهای بازی</title>
+  <style>
+    @font-face {
+      font-family: 'Vazir';
+      src: url('https://cdn.jsdelivr.net/gh/rastikerdar/vazir-font/dist/Vazir.woff2') format('woff2');
+    }
+
+    body {
+      font-family: 'Vazir', sans-serif;
+      margin: 0;
+      padding: 0;
+      background: #f0f0f0;
+      transition: background 0.4s, color 0.4s;
+      position: relative;
+    }
+
+    body::before {
+      content: "VERTIGO";
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%) rotate(-30deg);
+      font-size: 5rem;
+      color: rgba(0, 0, 0, 0.05);
+      z-index: 0;
+      pointer-events: none;
+      white-space: nowrap;
+    }
+
+    .dark {
+      background: #1e1e1e;
+      color: #f5f5f5;
+    }
+
+    .container {
+      max-width: 600px;
+      margin: auto;
+      padding: 1rem;
+      position: relative;
+      z-index: 1;
+    }
+
+    .table {
+      background: white;
+      margin-bottom: 1rem;
+      padding: 1rem;
+      border-radius: 12px;
+      box-shadow: 0 0 10px rgba(0,0,0,0.1);
+      text-align: center;
+      transition: background 0.4s, color 0.4s;
+    }
+
+    .dark .table {
+      background: #2c2c2c;
+    }
+
+    button {
+      padding: 0.5rem 1rem;
+      margin: 0.3rem;
+      border: none;
+      border-radius: 6px;
+      background: #3498db;
+      color: white;
+      cursor: pointer;
+      transition: transform 0.2s ease, background 0.3s;
+    }
+
+    button:hover {
+      transform: scale(1.05);
+      background: #2980b9;
+    }
+
+    .settled {
+      background: #2ecc71 !important;
+    }
+
+    #mode-toggle {
+      position: fixed;
+      top: 10px;
+      left: 10px;
+      font-size: 1.4rem;
+      background: none;
+      border: none;
+      cursor: pointer;
+      z-index: 100;
+      animation: pulse 1.5s infinite;
+    }
+
+    @keyframes pulse {
+      0% { transform: scale(1); }
+      50% { transform: scale(1.2); }
+      100% { transform: scale(1); }
+    }
+
+    #end-day {
+      display: block;
+      margin: 2rem auto;
+      background: #e74c3c;
+    }
+
+    #total {
+      text-align: center;
+      margin-top: 1rem;
+      font-weight: bold;
+    }
+
+    #report {
+      margin-top: 1rem;
+      background: #f39c12;
+      padding: 0.5rem;
+      border-radius: 8px;
+      text-align: center;
+    }
+  </style>
+</head>
+<body>
+  <button id="mode-toggle">🌙</button>
+  <div class="container">
+    <h1 style="text-align: center;">مدیریت میزهای بازی</h1>
+    <div id="tables"></div>
+    <button onclick="addTable()">افزودن میز جدید</button>
+    <div id="total">جمع درآمد امروز: <span id="total-income">0</span> تومان</div>
+    <div id="report">گزارش تسویه شده‌ها: <span id="report-total">0</span> تومان</div>
+    <button id="end-day" onclick="endDay()">پایان روز کاری</button>
+  </div>
+  <script>
+    // جاوااسکریپت در همین فایل باقی مانده است
+  </script>
+</body>
+</html>
